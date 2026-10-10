@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Inter:wght@400;500&display=swap">
+<style>
+  :root { --bg: #08080a; --ink: #f2f0ea; --muted: rgba(242,240,234,.55); --accent: #c8ff3d; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; touch-action: none; }
+  .bg-word { position: fixed; left: 0; right: 0; top: 46%; transform: translateY(-50%); z-index: 0; text-align: center; white-space: nowrap;
+    font: 800 19vw/1 Syne, sans-serif; letter-spacing: -.04em; color: transparent; -webkit-text-stroke: 1px rgba(242,240,234,.08); user-select: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 24px 36px; }
+  .brand { font: 700 18px Syne, sans-serif; letter-spacing: .02em; }
+  .brand i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 10px; }
+  nav .links { display: flex; gap: 30px; font-size: 13px; }
+  nav a { color: inherit; text-decoration: none; opacity: .7; transition: opacity .3s; } nav a:hover { opacity: 1; }
+  .intro { position: fixed; top: 92px; left: 36px; z-index: 10; max-width: 330px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+  .intro b { color: var(--ink); font-weight: 500; }
+  .info { position: fixed; left: 36px; right: 36px; bottom: 32px; z-index: 10; display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 20px; pointer-events: none; }
+  .info > * { pointer-events: auto; }
+  .count { font: 500 13px Inter, sans-serif; color: var(--muted); }
+  .count b { font: 700 44px/1 Syne, sans-serif; color: var(--ink); display: block; margin-bottom: 6px; }
+  .title { text-align: center; }
+  .title .cat { font-size: 12px; letter-spacing: .25em; text-transform: uppercase; color: var(--accent); }
+  .title h1 { font: 800 clamp(34px, 5vw, 72px)/1 Syne, sans-serif; letter-spacing: -.02em; margin: 10px 0 12px; }
+  .title .tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .title .tags span { font-size: 11px; padding: 6px 12px; border: 1px solid rgba(242,240,234,.22); border-radius: 999px; color: var(--muted); }
+  .swap { transition: opacity .35s, transform .35s; } .swap.out { opacity: 0; transform: translateY(14px); }
+  .actions { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+  .open { display: inline-flex; align-items: center; gap: 12px; padding: 16px 26px; border-radius: 999px; background: var(--accent); color: #0b0b0b; font-weight: 500; font-size: 14px; text-decoration: none; cursor: pointer; border: 0; transition: transform .3s; }
+  .open:hover { transform: scale(1.04); }
+  .bars { display: flex; gap: 6px; }
+  .bars button { all: unset; cursor: pointer; width: 28px; height: 3px; background: rgba(242,240,234,.2); border-radius: 2px; transition: background .3s, width .3s; }
+  .bars button.on { background: var(--ink); width: 44px; }
+  .hint { position: fixed; top: 50%; right: 36px; z-index: 10; transform: translateY(-50%) rotate(90deg); transform-origin: right center; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  .cursor { position: fixed; z-index: 20; left: 0; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: var(--accent); color: #0b0b0b;
+    display: grid; place-items: center; font-size: 12px; font-weight: 500; pointer-events: none; transform: scale(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+  .cursor.show { transform: scale(1); }
+  .fade { position: fixed; inset: 0; z-index: 30; background: var(--bg); pointer-events: none; opacity: 1; transition: opacity .8s; }
+  .fade.clear { opacity: 0; }
+  @media (max-width: 760px) {
+    nav { padding: 18px 16px; } nav .links a:not(.contact) { display: none; }
+    .intro { left: 16px; right: 16px; top: 70px; font-size: 13px; }
+    .info { left: 16px; right: 16px; bottom: 20px; grid-template-columns: 1fr; text-align: center; }
+    .count { display: none; } .actions { justify-self: center; align-items: center; }
+    .hint, .cursor { display: none; }
+  }
+  @media (hover: none) { .cursor { display: none; } }
+</style>
+</head>
+<body>
+<div class="bg-word" id="bgWord">WORK</div>
+<canvas id="gl"></canvas>
+
+<nav>
+  <div class="brand"><i></i><span id="brandName"></span></div>
+  <div class="links"><a href="#">Work</a><a href="#">Services</a><a href="#">About</a><a class="contact" id="contact" href="#">Contact</a></div>
+</nav>
+<p class="intro" id="intro"></p>
+<div class="hint">Drag · Scroll · ← →</div>
+
+<div class="info">
+  <div class="count"><b id="num">01</b><span id="total">/ 04 projects</span></div>
+  <div class="title swap" id="titleBox"><div class="cat" id="cat"></div><h1 id="name"></h1><div class="tags" id="tags"></div></div>
+  <div class="actions"><button class="open" id="openBtn">Open project <span>→</span></button><div class="bars" id="bars"></div></div>
+</div>
+<div class="cursor" id="cursor">Drag</div>
+<div class="fade" id="fade"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+
+// ───── Edit these to make it yours ─────
+const STUDIO = {
+  name: "YOUR STUDIO",
+  intro: "<b>We design and build immersive websites</b> — 3D, motion and WebGL experiences that make brands impossible to scroll past.",
+  email: "hello@yourstudio.com",
+};
+const PROJECTS = [
+  { slug: "volt", name: "VOLT Energy", cat: "Product launch", tags: ["Three.js", "3D product", "GSAP"], color: "#ff7a1a" },
+  { slug: "neura", name: "NEURA", cat: "AI / Tech", tags: ["Particles", "GLSL shaders", "Scroll morph"], color: "#7cf3ff" },
+  { slug: "eclat", name: "Maison Éclat", cat: "Fashion", tags: ["Shader art", "Typography", "Motion"], color: "#e6b98a" },
+  { slug: "altitude", name: "Altitude", cat: "Real estate", tags: ["3D architecture", "Camera paths", "Sunset sky"], color: "#ffcf99" },
+];
+// ────────────────────────────────────────
+
+document.getElementById("brandName").textContent = STUDIO.name;
+document.getElementById("intro").innerHTML = STUDIO.intro;
+document.getElementById("contact").href = "mailto:" + STUDIO.email;
+document.title = STUDIO.name + " — Selected Work";
+document.getElementById("total").textContent = `/ ${String(PROJECTS.length).padStart(2, "0")} projects`;
+
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const canvas = document.getElementById("gl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+const CAM_Z = 9.5;
+camera.position.set(0, 0.35, CAM_Z);
+
+// Layout of the arc: cards sit on a circle and face outward, active card in front.
+const R = 7, STEP = 0.52, W = 3.2, H = 2.0, FLOOR = -1.35;
+
+const cardVert = /* glsl */`
+  uniform float uBend; varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    vec3 p = position;
+    // bend the plane around the ring so neighbouring cards read as one curved surface
+    float a = p.x / uBend; p.z += uBend * (cos(a) - 1.0); p.x = uBend * sin(a);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }`;
+const cardFrag = /* glsl */`
+  uniform sampler2D uTex; uniform float uLight, uReflect, uAlpha; uniform vec2 uSize; varying vec2 vUv;
+  float roundedBox(vec2 p, vec2 b, float r) { vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+  void main() {
+    vec2 p = (vUv - 0.5) * uSize;
+    float d = roundedBox(p, uSize * 0.5, 0.08);
+    float mask = 1.0 - smoothstep(-0.004, 0.004, d);
+    vec3 col = texture2D(uTex, vUv).rgb * uLight;
+    float a = mask * uAlpha;
+    if (uReflect > 0.5) a *= 0.22 * smoothstep(0.35, 1.0, vUv.y);   // fade the floor reflection
+    gl_FragColor = vec4(col, a);
+    #include <colorspace_fragment>
+  }`;
+
+const loader = new THREE.TextureLoader();
+function placeholder(p) {
+  const c = document.createElement("canvas"); c.width = 640; c.height = 400;
+  const g = c.getContext("2d"); g.fillStyle = "#16161a"; g.fillRect(0, 0, 640, 400);
+  g.fillStyle = p.color; g.font = "700 48px Syne, sans-serif"; g.textAlign = "center"; g.fillText(p.name, 320, 215);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+
+const ring = new THREE.Group(); scene.add(ring);
+const cards = PROJECTS.map((p, i) => {
+  const tex = placeholder(p);
+  loader.load(`previews/${p.slug}.jpg`, (t) => {
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    mesh.material.uniforms.uTex.value = t; mirror.material.uniforms.uTex.value = t;
+  });
+  const geo = new THREE.PlaneGeometry(W, H, 32, 1);
+  const mk = (reflect) => new THREE.ShaderMaterial({
+    vertexShader: cardVert, fragmentShader: cardFrag, transparent: true, depthWrite: !reflect,
+    uniforms: { uTex: { value: tex }, uBend: { value: R }, uLight: { value: 1 }, uReflect: { value: reflect }, uAlpha: { value: 1 }, uSize: { value: new THREE.Vector2(W, H) } },
+  });
+  const mesh = new THREE.Mesh(geo, mk(0));
+  const mirror = new THREE.Mesh(geo, mk(1));
+  mirror.scale.y = -1; mirror.position.y = 2 * FLOOR;
+  const pivot = new THREE.Group(); pivot.add(mesh, mirror);
+  mesh.userData.index = i;
+  ring.add(pivot);
+  return { pivot, mesh, mirror, hover: 0, intro: 0 };
+});
+
+// Soft glow on the floor under the active card
+const glowTex = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 256;
+  const g = c.getContext("2d"), grd = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grd; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+})();
+const glow = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.6), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }));
+glow.rotation.x = -Math.PI / 2; glow.position.set(0, FLOOR + 0.01, 0.2); scene.add(glow);
+const grid = new THREE.GridHelper(40, 60, 0xffffff, 0xffffff);
+grid.material.transparent = true; grid.material.opacity = 0.05; grid.position.y = FLOOR; scene.add(grid);
+
+// ───── State + interaction ─────
+const startIndex = Math.max(0, PROJECTS.findIndex((p) => "#" + p.slug === location.hash));
+let offset = startIndex, target = startIndex, active = -1;
+const clampT = (v) => Math.max(-0.35, Math.min(PROJECTS.length - 1 + 0.35, v));
+const snap = () => { target = Math.max(0, Math.min(PROJECTS.length - 1, Math.round(target))); };
+const goTo = (i) => { target = Math.max(0, Math.min(PROJECTS.length - 1, i)); };
+
+let wheelTimer;
+addEventListener("wheel", (e) => {
+  e.preventDefault();
+  target = clampT(target + (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * 0.0022);
+  clearTimeout(wheelTimer); wheelTimer = setTimeout(snap, 140);
+}, { passive: false });
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo(Math.round(target) + 1);
+  if (e.key === "ArrowLeft" || e.key === "ArrowUp") goTo(Math.round(target) - 1);
+  if (e.key === "Enter") openProject(active);
+});
+
+const pointer = new THREE.Vector2(), ndc = new THREE.Vector2(9, 9), ray = new THREE.Raycaster();
+let drag = null;
+canvas.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, start: target, moved: 0 }; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener("pointermove", (e) => {
+  ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (!drag) return;
+  const dx = e.clientX - drag.x; drag.moved = Math.max(drag.moved, Math.abs(dx));
+  target = clampT(drag.start - dx * (innerWidth < 760 ? 0.006 : 0.0035));
+});
+canvas.addEventListener("pointerup", (e) => {
+  const wasClick = drag && drag.moved < 6; drag = null;
+  if (!wasClick) return snap();
+  const hit = pick();
+  if (hit === null) return snap();
+  if (hit === active) openProject(hit); else goTo(hit);
+});
+function pick() {
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(cards.map((c) => c.mesh));
+  return hits.length ? hits[0].object.userData.index : null;
+}
+
+// Custom cursor: "Drag" on empty space, "Open" over the active card
+const cursor = document.getElementById("cursor");
+addEventListener("pointermove", (e) => { pointer.set(e.clientX, e.clientY); });
+canvas.addEventListener("pointerenter", () => cursor.classList.add("show"));
+canvas.addEventListener("pointerleave", () => { cursor.classList.remove("show"); ndc.set(9, 9); });
+
+// Info panel
+const bars = document.getElementById("bars");
+PROJECTS.forEach((_, i) => { const b = document.createElement("button"); b.setAttribute("aria-label", "Project " + (i + 1)); b.onclick = () => goTo(i); bars.appendChild(b); });
+const titleBox = document.getElementById("titleBox");
+function setActive(i) {
+  active = i;
+  const p = PROJECTS[i];
+  history.replaceState(null, "", "#" + p.slug); // so Back from a demo lands on the same card
+  [...bars.children].forEach((b, k) => b.classList.toggle("on", k === i));
+  document.getElementById("num").textContent = String(i + 1).padStart(2, "0");
+  document.documentElement.style.setProperty("--accent", p.color);
+  titleBox.classList.add("out");
+  setTimeout(() => {
+    document.getElementById("cat").textContent = p.cat;
+    document.getElementById("name").textContent = p.name;
+    document.getElementById("tags").innerHTML = p.tags.map((t) => `<span>${t}</span>`).join("");
+    titleBox.classList.remove("out");
+  }, 220);
+}
+document.getElementById("openBtn").onclick = () => openProject(active);
+
+// Open: fly the camera into the card, fade, then navigate
+let opening = false;
+function openProject(i) {
+  if (opening || i < 0) return;
+  if (i !== Math.round(offset)) return goTo(i);
+  opening = true;
+  cursor.classList.remove("show");
+  const url = `demos/${PROJECTS[i].slug}/`;
+  if (reduced) { location.href = url; return; }
+  gsap.to(camera.position, { z: 3.1, y: 0, duration: 1.0, ease: "power3.in" });
+  gsap.to(camera, { fov: 28, duration: 1.0, ease: "power3.in", onUpdate: () => camera.updateProjectionMatrix() });
+  setTimeout(() => document.getElementById("fade").classList.remove("clear"), 650);
+  setTimeout(() => { location.href = url; }, 1250);
+}
+// Coming back with the browser's Back button restores the page from cache: reset it
+addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  opening = false; camera.position.y = 0.35; camera.fov = 35; resize();
+  document.getElementById("fade").classList.add("clear");
+});
+addEventListener("hashchange", () => {
+  const i = PROJECTS.findIndex((p) => "#" + p.slug === location.hash);
+  if (i >= 0) goTo(i);
+});
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  // on narrow screens, move back just enough that the active card spans ~80% of the width
+  const fit = (W * 1.25) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+  camera.position.z = Math.max(CAM_Z, fit);
+  camera.updateProjectionMatrix();
+}
+addEventListener("resize", resize); resize();
+
+// Intro: cards rise in one after another
+cards.forEach((c, i) => gsap.to(c, { intro: 1, duration: reduced ? 0 : 1.4, delay: reduced ? 0 : 0.25 + i * 0.12, ease: "expo.out" }));
+requestAnimationFrame(() => document.getElementById("fade").classList.add("clear"));
+
+const bgWord = document.getElementById("bgWord");
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  offset += (target - offset) * 0.085;
+  const idx = Math.max(0, Math.min(PROJECTS.length - 1, Math.round(offset)));
+  if (idx !== active) setActive(idx);
+
+  const hovered = drag || opening ? null : pick();
+  const overActive = hovered !== null && hovered === idx;
+  cursor.textContent = overActive ? "Open" : hovered !== null ? "View" : "Drag";
+  cursor.style.left = pointer.x + "px"; cursor.style.top = pointer.y + "px";
+  canvas.style.cursor = hovered !== null ? "pointer" : drag ? "grabbing" : "grab";
+
+  cards.forEach((c, i) => {
+    const d = i - offset;
+    const a = d * STEP;
+    c.hover += ((hovered === i ? 1 : 0) - c.hover) * 0.12;
+    const lift = (1 - c.intro) * -2.5;
+    c.pivot.position.set(Math.sin(a) * R, lift + (reduced ? 0 : Math.sin(t * 0.9 + i) * 0.03), Math.cos(a) * R - R);
+    c.pivot.rotation.y = a;
+    const s = 1 + c.hover * 0.03;
+    c.mesh.scale.set(s, s, 1); c.mirror.scale.set(s, -s, 1);
+    const near = Math.max(0, 1 - Math.abs(d));
+    const light = 0.38 + 0.62 * near + c.hover * 0.15;
+    for (const m of [c.mesh, c.mirror]) {
+      m.material.uniforms.uLight.value = light;
+      m.material.uniforms.uAlpha.value = c.intro * Math.max(0, 1 - Math.max(0, Math.abs(d) - 1.6));
+    }
+  });
+  glow.material.color.set(PROJECTS[idx].color);
+
+  if (!opening && !reduced) {
+    camera.position.x += (ndc.x * 0.25 * (Math.abs(ndc.x) < 2 ? 1 : 0) - camera.position.x) * 0.04;
+    camera.lookAt(0, 0, 0);
+  }
+  bgWord.style.transform = `translate(${-offset * 6}vw, -50%)`;
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
