@@ -24,6 +24,7 @@ At the top of the `<script type="module">` in [index.html](index.html):
 
 | Demo | Signature motion | Built with |
 |---|---|---|
+| `altus` | One-take scroll: orbit → dive to a real coastline → fly through clouds → land on a real balcony with a 3D sofa | Earth shader (day/night, city lights, glint, atmosphere), bloom, cloud fly-through shader, GroundedSkybox |
 | `volt` | 3D can built in code, flavor spin + recolor | three.js, GSAP |
 | `titan` | Scroll-driven exploded view, HUD labels pinned to parts | glTF model, GSAP, Lenis, SplitText |
 | `vanta` | Car placed inside real 360° photos; film-style cuts between locations | GroundedSkybox, HDRI lighting, real shadows |
@@ -65,6 +66,7 @@ Dev tools: `tools/inspect.html` (model sizes, variants, animations) and `tools/l
 | Glam Velvet Sofa | Eric Chadwick © 2021 Wayfair, Khronos glTF Sample Assets | CC BY 4.0 |
 | Sheen Chair | © 2020 Wayfair, Khronos glTF Sample Assets | CC0 |
 | HDRIs, location photos, lookbook photos | Poly Haven | CC0 |
+| Earth day / night / clouds textures | Solar System Scope, via three.js examples | CC BY 4.0 |
 | Silk background | React Bits by David Haz | MIT + Commons Clause |
 
 Before using this publicly: the watch and car models include Khronos / DGG logos, which their

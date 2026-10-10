@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALTUS Residences</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono&display=swap">
+<style>
+  :root { --ink: #f4efe6; --muted: rgba(244,239,230,.62); --gold: #e3c18e; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: #000; color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .track { height: 720vh; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 26px 40px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; }
+  .logo { font: 400 22px "Cormorant Garamond", serif; letter-spacing: .5em; }
+  nav .links { display: flex; gap: 30px; opacity: .8; }
+  nav .btn { padding: 11px 20px; border: 1px solid rgba(244,239,230,.4); border-radius: 999px; }
+  .back { position: fixed; top: 74px; left: 40px; z-index: 10; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+  .ch { position: fixed; z-index: 5; pointer-events: none; opacity: 0; }
+  .ch .k { font-size: 11px; letter-spacing: .32em; text-transform: uppercase; color: var(--gold); }
+  .ch h1, .ch h2 { font: 300 clamp(56px, 8vw, 132px)/.92 "Cormorant Garamond", serif; letter-spacing: -.01em; margin: 18px 0 20px; text-shadow: 0 4px 40px rgba(0,0,0,.35); }
+  .ch h2 { font-size: clamp(48px, 6.4vw, 110px); }
+  .ch em { font-style: italic; color: var(--gold); }
+  .ch p { font-weight: 300; font-size: 15px; line-height: 1.75; color: var(--muted); max-width: 380px; }
+  #c0 { left: 40px; bottom: 16vh; }
+  #c1 { left: 40px; bottom: 16vh; }
+  #c2 { left: 0; right: 0; top: 40vh; text-align: center; } #c2 h2 { color: #1f2a3a; text-shadow: none; } #c2 .k { color: #45566e; }
+  #c3 { left: 40px; top: 15vh; pointer-events: auto; } #c3 h2, #c3 .stats { text-shadow: 0 2px 30px rgba(0,0,0,.5); }
+  .stats { display: flex; gap: 40px; margin: 26px 0 30px; }
+  .stats b { display: block; font: 300 40px "Cormorant Garamond", serif; }
+  .stats span { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+  .cta { display: inline-flex; gap: 14px; align-items: center; padding: 18px 32px; border-radius: 999px; background: var(--ink); color: #14110d; text-decoration: none; font-size: 13px; letter-spacing: .08em; }
+  .hud { position: fixed; left: 40px; right: 40px; bottom: 26px; z-index: 6; display: flex; justify-content: space-between; align-items: flex-end; font: 11px "JetBrains Mono", monospace; letter-spacing: .06em; color: var(--muted); pointer-events: none; }
+  .hud b { display: block; font: 300 30px "Cormorant Garamond", serif; color: var(--ink); letter-spacing: 0; margin-top: 4px; }
+  .hud .mid { text-align: center; }
+  .hud .bar { width: 180px; height: 1px; background: rgba(244,239,230,.2); margin-top: 10px; } .hud .bar i { display: block; height: 100%; width: 0; background: var(--gold); }
+  .hint { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 6; font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  .hint i { display: block; width: 1px; height: 40px; margin: 12px auto 0; background: linear-gradient(var(--ink), transparent); animation: drip 1.8s infinite; transform-origin: top; }
+  @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+  .loader { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: #000; font: 300 9vw/1 "Cormorant Garamond", serif; letter-spacing: .1em; transition: opacity 1.2s; }
+  .loader.done { opacity: 0; pointer-events: none; }
+  .credit { position: fixed; right: 40px; top: 74px; z-index: 6; font-size: 9px; line-height: 1.6; color: var(--muted); text-align: right; opacity: .7; }
+  @media (max-width: 760px) {
+    nav .links, .credit, .hud .mid { display: none; } nav { padding: 18px 16px; } .back { left: 16px; top: 60px; }
+    #c0, #c3 { left: 16px; right: 16px; } #c1 { right: 16px; left: 16px; } .ch p { font-size: 13px; }
+    .stats { gap: 20px; } .stats b { font-size: 28px; } .hud { left: 16px; right: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><span data-pct>0%</span></div>
+<canvas id="gl"></canvas>
+<div id="scrim" style="position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;background:linear-gradient(100deg,rgba(10,8,6,.72) 0%,rgba(10,8,6,.35) 38%,transparent 62%)"></div>
+<nav><div class="logo">ALTUS</div><div class="links"><span>Residences</span><span>The Coast</span><span>Amenities</span></div><div class="btn">Private viewing</div></nav>
+<a class="back" href="../../#altus">← Back to showcase</a>
+
+<div class="ch" id="c0"><div class="k">Altus Residences · Illovo Coast</div><h1>Live above<br><em>it all.</em></h1><p>Twelve penthouses on the Indian Ocean. Scroll to arrive.</p></div>
+<div class="ch" id="c1"><div class="k">The descent</div><h2>Every view<br>starts <em>somewhere.</em></h2><p>From orbit to the coastline of KwaZulu-Natal, where the warm current meets the sand.</p></div>
+<div class="ch" id="c2"><div class="k">Through the clouds</div><h2>Almost home.</h2></div>
+<div class="ch" id="c3"><div class="k">Penthouse 07 · Level 12</div><h2>Your view,<br><em>reserved.</em></h2>
+  <div class="stats"><div><b>4</b><span>Bedrooms</span></div><div><b>410 m²</b><span>Living</span></div><div><b>180°</b><span>Ocean view</span></div></div>
+  <a class="cta" href="#" data-magnetic>Book a private viewing →</a></div>
+
+<div class="hint" id="hint">Scroll to descend<i></i></div>
+<div class="hud">
+  <div>ALTITUDE<b id="alt">35,786 km</b></div>
+  <div class="mid">30.1° S · 30.8° E<div class="bar"><i id="bar"></i></div></div>
+  <div style="text-align:right">CHAPTER<b id="chap">01 / 04</b></div>
+</div>
+<div class="track"></div>
+<div class="credit">Earth textures: Solar System Scope, CC BY 4.0 · Balcony: Poly Haven “Illovo Beach Balcony”, CC0<br>Sofa: “Glam Velvet Sofa” by Eric Chadwick © 2021 Wayfair, CC BY 4.0</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { GroundedSkybox } from "three/addons/objects/GroundedSkybox.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { initMotion } from "../shared/motion.js";
+
+const q = new URLSearchParams(location.search);
+const capture = q.has("capture");
+const { gsap, lenis } = initMotion({ curtainColor: "#000" });
+const lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
+const smooth = (x) => x * x * (3 - 2 * x);
+const seg = (p, a, b) => smooth(clamp((p - a) / (b - a), 0, 1));
+
+// ───── renderer + bloom ─────
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("gl"), antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(22, 1, 0.001, 2000);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(), 0.6, 0.6, 0.82);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ───── loading ─────
+const manager = new THREE.LoadingManager();
+const loaderEl = document.getElementById("loader");
+manager.onProgress = (_, a, b) => (loaderEl.querySelector("[data-pct]").textContent = Math.round((a / b) * 100) + "%");
+const tex = new THREE.TextureLoader(manager);
+const load = (u) => new Promise((res) => tex.load(u, res));
+const [dayMap, nightMap, brcMap, photo, env, sofaGltf] = await Promise.all([
+  load("../../assets/earth/earth_day_4096.jpg"),
+  load("../../assets/earth/earth_night_4096.jpg"),
+  load("../../assets/earth/earth_bump_roughness_clouds_4096.jpg"),
+  load("../../assets/locations/illovo_beach_balcony.jpg"),
+  new RGBELoader(manager).loadAsync("../../assets/locations/illovo_beach_balcony.hdr"),
+  new GLTFLoader(manager).loadAsync("../../assets/models/GlamVelvetSofa.glb"),
+]);
+[dayMap, nightMap].forEach((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+brcMap.anisotropy = 8;
+
+// ───── SPACE: Earth, clouds, atmosphere, sun, stars ─────
+const space = new THREE.Group(); scene.add(space);
+const sunDir = new THREE.Vector3();
+const earthMat = new THREE.ShaderMaterial({
+  uniforms: { uDay: { value: dayMap }, uNight: { value: nightMap }, uBRC: { value: brcMap }, uSun: { value: sunDir } },
+  vertexShader: /* glsl */`
+    varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+    void main() { vUv = uv; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+  fragmentShader: /* glsl */`
+    uniform sampler2D uDay, uNight, uBRC; uniform vec3 uSun;
+    varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+    void main() {
+      vec3 n = normalize(vN), v = normalize(cameraPosition - vW);
+      float d = dot(n, uSun);
+      float dayMix = smoothstep(-0.18, 0.28, d);
+      vec3 day = texture2D(uDay, vUv).rgb, night = texture2D(uNight, vUv).rgb;
+      vec3 brc = texture2D(uBRC, vUv).rgb;                 // r: bump, g: roughness, b: clouds
+      float ocean = 1.0 - smoothstep(0.35, 0.65, brc.g);   // low roughness = water
+      vec3 col = day * (0.15 + 1.05 * max(d, 0.0));
+      col += night * vec3(1.0, 0.75, 0.45) * 2.2 * (1.0 - dayMix);   // city lights on the night side
+      vec3 h = normalize(uSun + v);
+      col += vec3(1.0, 0.92, 0.8) * pow(max(dot(n, h), 0.0), 28.0) * ocean * 0.55 * smoothstep(0.0, 0.3, d);   // sun glint on oceans
+      // warm terminator band
+      col += vec3(1.0, 0.45, 0.15) * 0.25 * exp(-pow(d * 6.0, 2.0)) * (1.0 - ocean * 0.5);
+      // atmosphere haze at the rim
+      float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0);
+      col = mix(col, vec3(0.35, 0.6, 1.0) * (0.25 + max(d, 0.0)), rim * 0.65);
+      gl_FragColor = vec4(col, 1.0);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`,
+});
+const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 192), earthMat);
+const cloudMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { uBRC: { value: brcMap }, uSun: { value: sunDir }, uShift: { value: 0 } },
+  vertexShader: earthMat.vertexShader,
+  fragmentShader: /* glsl */`
+    uniform sampler2D uBRC; uniform vec3 uSun; uniform float uShift;
+    varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+    void main() {
+      float c = texture2D(uBRC, vUv + vec2(uShift, 0.0)).b;
+      float d = dot(normalize(vN), uSun);
+      vec3 col = vec3(1.0) * (0.06 + 1.1 * max(d, 0.0)) + vec3(1.0, 0.5, 0.2) * 0.3 * exp(-pow(d * 5.0, 2.0));
+      gl_FragColor = vec4(col, smoothstep(0.15, 0.85, c) * 0.92);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`,
+});
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(1.006, 160, 160), cloudMat);
+const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.045, 96, 96), new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
+  uniforms: { uSun: { value: sunDir } },
+  vertexShader: earthMat.vertexShader,
+  fragmentShader: /* glsl */`
+    uniform vec3 uSun; varying vec3 vN; varying vec3 vW;
+    void main() {
+      vec3 n = normalize(vN), v = normalize(cameraPosition - vW);
+      float fres = pow(1.0 - abs(dot(n, v)), 2.2);
+      float lit = smoothstep(-0.35, 0.6, dot(n, uSun));
+      vec3 col = mix(vec3(1.0, 0.45, 0.2), vec3(0.3, 0.6, 1.0), smoothstep(0.0, 0.6, dot(n, uSun)));
+      gl_FragColor = vec4(col * fres * lit * 1.6, 1.0);
+    }`,
+}));
+const planet = new THREE.Group(); planet.add(earth, clouds, atmo); space.add(planet);
+// stars
+const starGeo = new THREE.BufferGeometry(), sp = new Float32Array(6000 * 3);
+for (let i = 0; i < 6000; i++) { const v = new THREE.Vector3().randomDirection().multiplyScalar(600 + Math.random() * 200); sp.set(v.toArray(), i * 3); }
+starGeo.setAttribute("position", new THREE.BufferAttribute(sp, 3));
+space.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, sizeAttenuation: false, transparent: true, opacity: 0.8 })));
+// sun glow sprite
+const glowC = document.createElement("canvas"); glowC.width = glowC.height = 256;
+const gg = glowC.getContext("2d"), grd = gg.createRadialGradient(128, 128, 0, 128, 128, 128);
+grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(0.08, "rgba(255,240,215,0.9)"); grd.addColorStop(0.3, "rgba(255,170,90,0.25)"); grd.addColorStop(1, "rgba(255,120,40,0)");
+gg.fillStyle = grd; gg.fillRect(0, 0, 256, 256);
+const sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowC), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+sun.scale.setScalar(60); space.add(sun);
+
+// Target: Illovo Beach, KwaZulu-Natal (approx.)
+const LAT = -30.1, LON = 30.8;
+function dirFromLatLon(lat, lon) {
+  const phi = THREE.MathUtils.degToRad(lon + 180), th = THREE.MathUtils.degToRad(lat);
+  return new THREE.Vector3(-Math.cos(phi) * Math.cos(th), Math.sin(th), Math.sin(phi) * Math.cos(th));
+}
+const target = dirFromLatLon(LAT, LON);
+// orientation that brings the target to face +z (camera side), north up
+const qTarget = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(LAT))
+  .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(target.x, target.z)));
+// hero orientation: the same longitude band seen from further east, at night
+const qHero = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.32)
+  .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(target.x, target.z) - 1.25));
+const SUN_HERO = new THREE.Vector3(-1, 0.18, -0.55).normalize();   // behind the planet: sunrise on the rim
+const SUN_ARRIVE = new THREE.Vector3(-0.45, 0.35, 0.82).normalize();
+
+// ───── CLOUD LAYER: full-screen fly-through ─────
+const cloudFX = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+  transparent: true, depthTest: false, depthWrite: false,
+  uniforms: { uT: { value: 0 }, uD: { value: 0 }, uAspect: { value: 1 } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: /* glsl */`
+    uniform float uT, uD, uAspect; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(h(i), h(i+vec2(1,0)), f.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), f.x), f.y); }
+    float fbm(vec2 p){ float v = 0.0, a = 0.55; for (int i = 0; i < 5; i++) { v += a * n(p); p *= 2.03; a *= 0.5; } return v; }
+    void main() {
+      vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
+      float acc = 0.0;
+      // three cloud layers rushing toward the camera
+      for (int i = 0; i < 3; i++) {
+        float z = fract(uT + float(i) / 3.0);
+        float s = mix(5.0, 0.4, z);
+        float fade = smoothstep(0.0, 0.25, z) * (1.0 - smoothstep(0.75, 1.0, z));
+        acc += smoothstep(0.42, 0.85, fbm(p * s + float(i) * 13.7)) * fade;
+      }
+      float a = clamp(acc * 1.25 * uD + smoothstep(0.65, 1.0, uD), 0.0, 1.0);
+      vec3 col = mix(vec3(0.72, 0.8, 0.9), vec3(1.0, 0.99, 0.97), clamp(acc, 0.0, 1.0));
+      gl_FragColor = vec4(col, a);
+    }`,
+}));
+cloudFX.frustumCulled = false; cloudFX.renderOrder = 999; scene.add(cloudFX);
+
+// ───── ARRIVAL: real balcony photo + sofa ─────
+const ground = new THREE.Group(); ground.visible = false; scene.add(ground);
+env.mapping = photo.mapping = THREE.EquirectangularReflectionMapping;
+photo.colorSpace = THREE.SRGBColorSpace; photo.anisotropy = 8;
+// Photo directions: yaw = (u − 0.5) · 2π for a point at horizontal position u of the panorama (rot = 0).
+// Ocean ≈ u 0.80, wall/floor ≈ u 0.45, sun ≈ u 0.60 at ~27° elevation.
+const ROT = q.has("rot") ? +q.get("rot") : 0;
+const yawOf = (u) => (u - 0.5) * Math.PI * 2;
+const YAW_OCEAN = yawOf(0.8), YAW_FINAL = yawOf(q.has("u") ? +q.get("u") : 0.56);
+const sky = new GroundedSkybox(photo, 1.6, 14);
+sky.material.toneMapped = false; sky.position.y = 1.6 - 0.01; sky.rotation.y = ROT; ground.add(sky);
+const sofa = sofaGltf.scene;
+sofa.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+ground.add(sofa);
+const sofaPos = new THREE.Vector3(q.has("sx") ? +q.get("sx") : 2.0, 0, q.has("sz") ? +q.get("sz") : 0.15);
+sofa.position.copy(sofaPos); sofa.rotation.y = q.has("sr") ? +q.get("sr") : -0.6;
+// set the Champagne velvet if available
+const vext = sofaGltf.userData.gltfExtensions?.KHR_materials_variants;
+if (vext) {
+  const idx = vext.variants.findIndex((x) => x.name === "Champagne");
+  sofa.traverse((o) => {
+    const m = o.isMesh && o.userData.gltfExtensions?.KHR_materials_variants?.mappings.find((x) => x.variants.includes(idx));
+    if (m) sofaGltf.parser.getDependency("material", m.material).then((mat) => (o.material = mat));
+  });
+}
+const sunLight = new THREE.DirectionalLight("#fff4e0", 2.2);
+sunLight.position.copy(new THREE.Vector3(Math.cos(yawOf(0.6)), 0.5, Math.sin(yawOf(0.6))).multiplyScalar(7)); // matches the sun in the photo
+ sunLight.castShadow = true; sunLight.shadow.mapSize.set(2048, 2048); sunLight.shadow.bias = -0.0004; sunLight.shadow.normalBias = 0.02;
+Object.assign(sunLight.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 20 });
+ground.add(sunLight);
+const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.35 }));
+shadowFloor.rotation.x = -Math.PI / 2; shadowFloor.position.y = 0.003; shadowFloor.receiveShadow = true; ground.add(shadowFloor);
+const blobC = document.createElement("canvas"); blobC.width = blobC.height = 128;
+const bg2 = blobC.getContext("2d"), bgr = bg2.createRadialGradient(64, 64, 0, 64, 64, 64);
+bgr.addColorStop(0, "rgba(0,0,0,.5)"); bgr.addColorStop(1, "rgba(0,0,0,0)"); bg2.fillStyle = bgr; bg2.fillRect(0, 0, 128, 128);
+const blob = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blobC), transparent: true, depthWrite: false }));
+blob.rotation.x = -Math.PI / 2; blob.position.set(sofaPos.x, 0.004, sofaPos.z); ground.add(blob);
+
+loaderEl.querySelector("[data-pct]").textContent = "100%";
+if (capture) loaderEl.remove(); else { loaderEl.classList.add("done"); setTimeout(() => loaderEl.remove(), 1300); }
+
+// ───── chapters ─────
+const CH = [
+  { el: "c0", from: -1, to: 0.1 },
+  { el: "c1", from: 0.16, to: 0.42 },
+  { el: "c2", from: 0.5, to: 0.62 },
+  { el: "c3", from: 0.8, to: 2 },
+].map((c) => ({ ...c, node: document.getElementById(c.el), on: false }));
+document.fonts.ready.then(() => CH.forEach((c) => (c.split = SplitText.create(c.node.querySelector("h1, h2"), { type: "lines", mask: "lines" }))));
+function showChapters(p) {
+  CH.forEach((c, i) => {
+    const on = p >= c.from && p < c.to;
+    if (on === c.on) return;
+    c.on = on;
+    if (capture) gsap.set(c.node, { opacity: on ? 1 : 0 });
+    else gsap.to(c.node, { opacity: on ? 1 : 0, duration: on ? 0.6 : 0.4, overwrite: true });
+    if (on && c.split && !capture) {
+      gsap.fromTo(c.split.lines, { yPercent: 110 }, { yPercent: 0, duration: 1.2, stagger: 0.1, ease: "expo.out", overwrite: true });
+      gsap.fromTo(c.node.querySelectorAll(".k, p, .stats, .cta"), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 1, stagger: 0.08, delay: 0.2, ease: "power3.out", overwrite: true });
+    }
+    if (on) document.getElementById("chap").textContent = `0${i + 1} / 04`;
+  });
+}
+
+function resize() {
+  renderer.setSize(innerWidth, innerHeight, false);
+  composer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  cloudFX.material.uniforms.uAspect.value = camera.aspect;
+}
+addEventListener("resize", resize); resize();
+
+// ───── the one-take camera ─────
+const scrim = document.getElementById("scrim"), altEl = document.getElementById("alt"), barEl = document.getElementById("bar"), hint = document.getElementById("hint");
+const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
+addEventListener("pointermove", (e) => { pointer.x = e.clientX / innerWidth - 0.5; pointer.y = e.clientY / innerHeight - 0.5; });
+let prog = q.has("p") ? +q.get("p") : 0, cloudT = 0;
+const tmpQ = new THREE.Quaternion(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const raw = q.has("p") ? +q.get("p") : (max > 0 ? scrollY / max : 0);
+  const dp = raw - prog; prog += dp * 0.1;
+  const p = prog;
+  pointer.sx += (pointer.x - pointer.sx) * 0.05; pointer.sy += (pointer.y - pointer.sy) * 0.05;
+  showChapters(p);
+  barEl.style.width = p * 100 + "%";
+  hint.style.opacity = p < 0.02 ? 1 : 0;
+  scrim.style.opacity = seg(p, 0.76, 0.86);
+
+  const SWITCH = 0.66;           // moment of full whiteout: swap space for the balcony
+  const inSpace = p < SWITCH;
+  space.visible = inSpace; ground.visible = !inSpace;
+
+  if (inSpace) {
+    scene.environment = null; scene.background = null;
+    renderer.toneMappingExposure = 1.0;
+    const d = seg(p, 0.06, 0.64);                      // descent progress
+    // planet turns from the night hemisphere to face the target as the sun rises
+    tmpQ.slerpQuaternions(qHero, qTarget, smooth(clamp(d * 1.25, 0, 1)));
+    planet.quaternion.copy(tmpQ);
+    clouds.material.uniforms.uShift.value = t * 0.0015;
+    sunDir.copy(SUN_HERO).lerp(SUN_ARRIVE, smooth(clamp(d * 1.4, 0, 1))).normalize();
+    sun.position.copy(sunDir).multiplyScalar(500);
+    // distance: geostationary orbit → low altitude, accelerating like a fall
+    const dist = 1 + 5.62 * Math.pow(1 - d, 2.6) + 0.004;
+    camera.fov = lerp(22, 62, smooth(d));
+    camera.updateProjectionMatrix();
+    // hero framing: planet lower-right; descent: aim at the target, finally tilt to the horizon
+    const c = smooth(clamp(d * 1.7, 0, 1));
+    camPos.set(lerp(-1.5, 0, c) + pointer.sx * 0.15 * (1 - d), lerp(0.75, 0, c) - pointer.sy * 0.1 * (1 - d), dist);
+    camera.position.copy(camPos);
+    look.set(lerp(-0.85, 0, c), lerp(0.75, 0.0, c), 0).lerp(new THREE.Vector3(0, 0.9, 0.4), seg(d, 0.75, 1.0));
+    camera.lookAt(look);
+    const alt = (dist - 1) * 6371;
+    altEl.textContent = (alt >= 100 ? Math.round(alt).toLocaleString("en-US") : alt.toFixed(1)) + " km";
+    bloom.strength = 0.65;
+  } else {
+    scene.environment = env; scene.environmentRotation.y = ROT; scene.environmentIntensity = 1.0;
+    renderer.toneMappingExposure = 0.95;
+    const a = seg(p, SWITCH, 0.92);                    // settle onto the balcony
+    // stay near the photo's centre (where the projection is correct): sink from above the
+    // railing while panning from the open ocean to the sofa against the house wall
+    const yaw = lerp(YAW_OCEAN, YAW_FINAL, a) - pointer.sx * 0.15;
+    const pitch = lerp(-0.05, -0.22, a) - pointer.sy * 0.08;
+    camera.position.set(0, lerp(2.7, 1.5, a), 0);
+    camera.fov = lerp(64, 52, a); camera.updateProjectionMatrix();
+    camera.lookAt(Math.cos(yaw), camera.position.y + pitch, Math.sin(yaw));
+    const alt = lerp(0.18, 0.042, a);
+    altEl.textContent = (alt * 1000).toFixed(0) + " m";
+    bloom.strength = 0.18;
+  }
+  // clouds: build up before the switch, clear after it
+  const cd = seg(p, 0.5, SWITCH) * (1 - seg(p, SWITCH, 0.76));
+  cloudT += dt * (0.12 + Math.abs(dp) * 40);
+  cloudFX.material.uniforms.uT.value = cloudT;
+  cloudFX.material.uniforms.uD.value = cd;
+  cloudFX.visible = cd > 0.001;
+  composer.render();
+});
+</script>
+</body>
+</html>
