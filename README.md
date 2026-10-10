@@ -1,5 +1,7 @@
 # Showcase
 
+**Live:** https://enaconde.github.io/3d-showcase/
+
 A 3D carousel of sample websites. Visitors drag, scroll or use arrow keys to move between
 projects, and click the front card to fly into the demo. Each demo has one signature motion idea.
 
