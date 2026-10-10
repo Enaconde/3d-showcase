@@ -380,7 +380,7 @@ renderer.setAnimationLoop(() => {
     bloom.strength = 0.18;
   }
   // clouds: build up before the switch, clear after it
-  const cd = seg(p, 0.5, SWITCH) * (1 - seg(p, SWITCH, 0.76));
+  const cd = seg(p, 0.4, SWITCH) * (1 - seg(p, SWITCH, 0.76)); // thin clouds already hide the low-res texture close up
   cloudT += dt * (0.12 + Math.abs(dp) * 40);
   cloudFX.material.uniforms.uT.value = cloudT;
   cloudFX.material.uniforms.uD.value = cd;
