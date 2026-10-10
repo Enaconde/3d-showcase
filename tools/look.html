@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Model look</title>
+<style>html,body{margin:0;background:#222}canvas{display:block;width:100vw;height:100vh}</style>
+<canvas id="gl"></canvas>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+// Dev tool: renders a model from 4 directions (front +z, right +x, top +y, 3/4) in a 2x2 grid.
+// Usage: look.html?m=ChronographWatch[&v=Variant%20Name]
+import { createViewer, THREE } from "../demos/shared/viewer.js";
+const q = new URLSearchParams(location.search);
+const v = createViewer({ canvas: document.getElementById("gl"), fov: 30 });
+await v.loadEnvironment("../assets/hdri/studio_small_09.hdr");
+const m = await v.loadModel(`../assets/models/${q.get("m")}.glb`, { size: 2, center: "center" });
+if (q.get("v")) await m.setVariant(q.get("v"));
+v.renderer.setAnimationLoop(null);
+v.resize();
+const r = v.renderer, W = innerWidth, H = innerHeight, cam = v.camera;
+cam.aspect = W / H; cam.updateProjectionMatrix();
+r.setScissorTest(true);
+const views = [[0, 0, 5], [5, 0, 0], [0, 5, 0.001], [3, 2.5, 3]];
+r.setAnimationLoop(() => views.forEach((p, i) => {
+  const x = (i % 2) * W / 2, y = (i < 2 ? 1 : 0) * H / 2;
+  r.setViewport(x, y, W / 2, H / 2); r.setScissor(x, y, W / 2, H / 2);
+  cam.position.set(...p); cam.lookAt(0, 0, 0); r.render(v.scene, cam);
+}));
+document.title = "done";
+</script>

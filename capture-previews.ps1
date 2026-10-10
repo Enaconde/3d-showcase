@@ -1,4 +1,4 @@
-# Re-take preview images for the showcase cards. Run while serve.ps1 is running.
+﻿# Re-take preview images for the showcase cards. Run while serve.ps1 is running.
 # Usage: powershell -ExecutionPolicy Bypass -File capture-previews.ps1 [demo names...]
 param([string[]]$Demos = @())
 $root = $PSScriptRoot
@@ -14,9 +14,9 @@ $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.D
 
 foreach ($d in $Demos) {
   $png = Join-Path $env:TEMP "showcase-$d.png"
-  Start-Process -FilePath $browser -Wait -WindowStyle Hidden -ArgumentList "--headless=new", "--use-angle=swiftshader",
-    "--enable-unsafe-swiftshader", "--hide-scrollbars", "--user-data-dir=$profile", "--window-size=1600,1000",
-    "--virtual-time-budget=6000", "--screenshot=$png", "http://localhost:8770/demos/$d/?capture=1"
+  Start-Process -FilePath $browser -Wait -WindowStyle Hidden -ArgumentList "--headless=new", "--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist",
+    "--hide-scrollbars", "--user-data-dir=$profile", "--window-size=1600,1000",
+    "--virtual-time-budget=40000", "--screenshot=$png", "http://localhost:8770/demos/$d/?capture=1"
   # Downscale to 1280x800 JPG for fast loading as a 3D texture
   $src = [System.Drawing.Image]::FromFile($png)
   $dst = New-Object System.Drawing.Bitmap 1280, 800
@@ -26,3 +26,4 @@ foreach ($d in $Demos) {
   $g.Dispose(); $dst.Dispose(); $src.Dispose(); Remove-Item $png
   Write-Host "captured $d"
 }
+

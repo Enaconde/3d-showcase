@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VANTA GT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap">
+<style>
+  :root { --accent: #e03a3a; --bg: #050506; --ink: #f2f2f4; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  /* film frame: letterbox bars that close/open on every location cut */
+  .bar { position: fixed; left: 0; right: 0; height: 7vh; z-index: 5; background: #000; pointer-events: none; }
+  .bar.t { top: 0; } .bar.b { bottom: 0; }
+  .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(120% 90% at 50% 55%, transparent 55%, rgba(0,0,0,.55)); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 8; height: 7vh; display: flex; justify-content: space-between; align-items: center; padding: 0 36px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  .logo { font: 15px Michroma, sans-serif; letter-spacing: .32em; }
+  nav .links { display: flex; gap: 28px; opacity: .65; }
+  .back { position: fixed; top: calc(7vh + 18px); left: 36px; z-index: 8; font-size: 10px; color: inherit; opacity: .6; text-decoration: none; letter-spacing: .14em; text-transform: uppercase; }
+  .back:hover { opacity: 1; }
+  .hudline { position: fixed; bottom: 0; left: 0; right: 0; z-index: 8; height: 7vh; display: flex; justify-content: space-between; align-items: center; padding: 0 36px; font: 11px "JetBrains Mono", monospace; letter-spacing: .08em; color: rgba(242,242,244,.65); }
+  .hudline b { color: var(--ink); font-weight: 400; }
+  .rec::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 8px; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .chapter { position: fixed; left: 36px; bottom: calc(7vh + 40px); z-index: 6; max-width: 460px; pointer-events: none; }
+  .chapter .k { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); transition: color .6s; }
+  .chapter h1 { font: 400 clamp(30px, 3.6vw, 56px)/1.08 Michroma, sans-serif; margin: 14px 0 14px; letter-spacing: -.01em; text-shadow: 0 2px 30px rgba(0,0,0,.5); }
+  .chapter p { font-weight: 300; line-height: 1.7; opacity: .85; max-width: 380px; text-shadow: 0 1px 12px rgba(0,0,0,.6); }
+  .chapter .line { display: block; overflow: hidden; }
+  .chapter .line > span { display: inline-block; }
+  .stats { display: flex; gap: 34px; margin-top: 20px; }
+  .stats b { display: block; font: 24px Michroma, sans-serif; }
+  .stats span { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; opacity: .65; }
+  .chapters { position: fixed; right: 36px; top: 50%; transform: translateY(-50%); z-index: 6; display: flex; flex-direction: column; gap: 16px; text-align: right; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; }
+  .chapters div { opacity: .35; transition: opacity .4s; } .chapters div.on { opacity: 1; }
+  .chapters div b { display: block; font: 18px Michroma, sans-serif; letter-spacing: 0; }
+  .paint { position: fixed; right: 36px; bottom: calc(7vh + 40px); z-index: 6; display: flex; gap: 10px; align-items: center; }
+  .paint button { all: unset; cursor: pointer; width: 26px; height: 26px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 0 0 3px rgba(242,242,244,.35); transition: transform .2s; }
+  .paint button.on { box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 0 0 3px var(--ink); transform: scale(1.12); }
+  .paint span { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; margin-right: 6px; opacity: .7; }
+  .track { height: 400vh; }
+  .loader { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: #000; font: 5vw/1 Michroma, sans-serif; transition: opacity 1s; }
+  .loader.done { opacity: 0; pointer-events: none; }
+  .credit { position: fixed; left: 50%; transform: translateX(-50%); bottom: 1.6vh; z-index: 8; font-size: 8px; opacity: .3; white-space: nowrap; }
+  @media (max-width: 760px) {
+    nav .links, .chapters, .hudline .mid { display: none; } nav, .hudline { padding: 0 16px; } .back { left: 16px; }
+    .chapter { left: 16px; right: 16px; bottom: calc(7vh + 70px); } .chapter p { display: none; }
+    .paint { right: auto; left: 16px; bottom: calc(7vh + 18px); } .stats { gap: 16px; } .stats b { font-size: 16px; }
+    .credit { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><span data-pct>0%</span></div>
+<canvas id="gl"></canvas>
+<div class="vignette"></div>
+<div class="bar t" id="barT"></div><div class="bar b" id="barB"></div>
+<nav><div class="logo">VANTA</div><div class="links"><span>Models</span><span>Technology</span><span>Configure</span></div><div>Reserve</div></nav>
+<a class="back" href="../../#vanta">← Back to showcase</a>
+
+<div class="chapter" id="chapter"></div>
+<div class="chapters" id="chapters"></div>
+<div class="paint" id="paint"><span>Paint</span></div>
+<div class="hudline"><span class="rec" id="loc"></span><span class="mid" id="coords"></span><span id="tc">00:00:00:00</span></div>
+<div class="track"></div>
+<div class="credit">Car: “Car Concept” by Eric Chadwick © 2024 Darmstadt Graphics Group, CC BY 4.0 · Locations: Poly Haven (CC0)</div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script type="module">
+import { createViewer, THREE, capture, mobile, pointer, updatePointer, scrollProgress, progressUI, lerp, smooth } from "../shared/viewer.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { GroundedSkybox } from "three/addons/objects/GroundedSkybox.js";
+import { initMotion } from "../shared/motion.js";
+initMotion({ curtainColor: "#000" });
+
+// Each location is a real 360° photo (Poly Haven, CC0). The car is lit by the matching HDR.
+// rot = turns the photo so the road lines up with the car; height/radius shape the projected ground.
+const LOCS = [
+  { id: "rooftop_night", place: "Rooftop · Dusk", coords: "SCENE 01 · TAKE 04", time: "19:48",
+    k: "01 · After dark", title: "Silence,<br>accelerated.", text: "760 horsepower and not a sound. The city never hears you coming.",
+    stats: [["2.9s", "0–100 km/h"], ["760", "hp"], ["610", "km range"]],
+    rot: 1.6, height: 2.2, radius: 60, envI: 1.6, exposure: 1.0, sun: [5, 7, -4], shadow: 0.35, cam: [[0.65, 7.4, 1.2], [1.25, 7.0, 0.9]] },
+  { id: "goegap_road", place: "Namaqualand · Goegap", coords: "SCENE 02 · TAKE 07", time: "18:07",
+    k: "02 · Open road", title: "Range for<br>the long way.", text: "610 kilometres on a single charge. Take the road that isn't on the map.",
+    stats: [["610", "km range"], ["18 min", "10–80%"], ["0.21", "Drag coeff."]],
+    rot: 2.0, height: 2.2, radius: 60, envI: 1.0, exposure: 0.9, sun: [-9, 4, -6], shadow: 0.6, cam: [[1.62, 7.8, 1.0], [2.25, 7.0, 1.4]] },
+  { id: "modern_buildings_night", place: "Riverside · Night", coords: "SCENE 03 · TAKE 02", time: "21:15",
+    k: "03 · Arrival", title: "Make an<br>entrance.", text: "Full-width light signature and doors that open before you reach them.",
+    stats: [["4", "Motors"], ["325", "km/h top"], ["22\"", "Forged wheels"]],
+    rot: 3.8, height: 2.2, radius: 60, envI: 1.2, exposure: 1.0, sun: [1, 9, 3], shadow: 0.3, cam: [[3.3, 7.6, 1.1], [3.95, 6.6, 0.8]] },
+];
+const dbg = new URLSearchParams(location.search);
+if (dbg.has("rot")) LOCS[+dbg.get("loc") || 0].rot = +dbg.get("rot");
+if (dbg.has("h")) LOCS[+dbg.get("loc") || 0].height = +dbg.get("h");
+const PAINTS = [
+  { variant: "Carmine Candy", swatch: "#a3121b", accent: "#e8433b" },
+  { variant: "Torched Graphite", swatch: "#3b3d42", accent: "#b9c3d3" },
+  { variant: "Pearly Swirly", swatch: "#e8e4ea", accent: "#d9cfe8" },
+];
+
+const v = createViewer({ canvas: document.getElementById("gl"), fov: 34, exposure: 1.0, toneMapping: THREE.ACESFilmicToneMapping, shadows: true });
+const loaded = progressUI(document.getElementById("loader"));
+const prog = new Array(LOCS.length * 2 + 1).fill(0);
+const report = () => loaded(prog.reduce((a, b) => a + b, 0) / prog.length * 0.97);
+
+// Load every location (HDR for light + photo for the visible world) and the car in parallel
+const hdr = new RGBELoader(), tex = new THREE.TextureLoader();
+const withProgress = (loader, url, i) => new Promise((res, rej) => loader.load(url, res, (e) => { if (e.total) { prog[i] = e.loaded / e.total; report(); } }, rej));
+const [car, ...assets] = await Promise.all([
+  v.loadModel("../../assets/models/CarConcept.glb", { size: 4.4, castShadow: true, onProgress: (p) => { prog[prog.length - 1] = p; report(); } }),
+  ...LOCS.flatMap((l, i) => [withProgress(hdr, `../../assets/locations/${l.id}.hdr`, i * 2), withProgress(tex, `../../assets/locations/${l.id}.jpg`, i * 2 + 1)]),
+]);
+["License_Plate", "InteriorSteeringEmblem"].forEach((n) => { const o = car.find(n); if (o) o.visible = false; });
+LOCS.forEach((l, i) => {
+  const env = assets[i * 2], photo = assets[i * 2 + 1];
+  env.mapping = THREE.EquirectangularReflectionMapping;
+  photo.mapping = THREE.EquirectangularReflectionMapping; photo.colorSpace = THREE.SRGBColorSpace;
+  photo.anisotropy = v.renderer.capabilities.getMaxAnisotropy();
+  const sky = new GroundedSkybox(photo, l.height, l.radius);
+  sky.material.toneMapped = false; sky.material.transparent = true; sky.material.depthWrite = false;
+  sky.position.y = l.height - 0.01; sky.rotation.y = l.rot; sky.renderOrder = -1;
+  sky.visible = false; v.scene.add(sky);
+  Object.assign(l, { env, sky });
+});
+const shadow = v.addBlobShadow({ width: 3.0, depth: 5.4, opacity: 0.75, y: 0.012 });
+const sun = v.addShadowLight({ position: [4, 8, 3], intensity: 0, area: 5, opacity: 0.5, groundY: 0.006 });
+sun.light.shadow.mapSize.set(4096, 4096);
+await car.setVariant(PAINTS[0].variant);
+loaded(1);
+
+// UI
+const chaptersEl = document.getElementById("chapters");
+LOCS.forEach((l, i) => chaptersEl.insertAdjacentHTML("beforeend", `<div><b>0${i + 1}</b>${l.place.split(" · ")[1]}</div>`));
+const paintEl = document.getElementById("paint");
+PAINTS.forEach((p, i) => {
+  const b = document.createElement("button"); b.style.background = p.swatch; b.title = p.variant;
+  b.onclick = () => { [...paintEl.querySelectorAll("button")].forEach((x, k) => x.classList.toggle("on", k === i));
+    document.documentElement.style.setProperty("--accent", p.accent); car.setVariant(p.variant); };
+  paintEl.appendChild(b);
+});
+paintEl.querySelector("button").classList.add("on");
+
+// Location cuts: bars close, swap the world, bars open, headline lines rise in
+const barT = document.getElementById("barT"), barB = document.getElementById("barB"), chapterEl = document.getElementById("chapter");
+let active = -1, pending = -1, cutting = false;
+function applyLocation(i) {
+  active = i;
+  const l = LOCS[i];
+  LOCS.forEach((x, k) => (x.sky.visible = k === i));
+  v.scene.environmentIntensity = l.envI;
+  v.scene.environment = l.env;
+  v.scene.environmentRotation.y = l.rot;
+  sun.light.position.set(...l.sun); sun.ground.material.opacity = l.shadow;
+  v.renderer.toneMappingExposure = l.exposure;
+  chapterEl.innerHTML = `<div class="k">${l.k}</div><h1>${l.title.split("<br>").map((s) => `<span class="line"><span>${s}</span></span>`).join("")}</h1><p>${l.text}</p>
+    <div class="stats">${l.stats.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join("")}</div>`;
+  [...chaptersEl.children].forEach((c, k) => c.classList.toggle("on", k === i));
+  document.getElementById("loc").textContent = l.place.toUpperCase();
+  document.getElementById("coords").textContent = l.coords;
+  if (!capture) {
+    gsap.from(chapterEl.querySelectorAll(".line > span"), { yPercent: 110, duration: 1.1, ease: "expo.out", stagger: 0.08 });
+    gsap.from(chapterEl.querySelectorAll(".k, p, .stats"), { opacity: 0, y: 16, duration: 0.9, ease: "power3.out", stagger: 0.06, delay: 0.2 });
+  }
+}
+function cutTo(i) {
+  if (i === active || i === pending) return;
+  pending = i;
+  if (capture || active === -1) { applyLocation(i); pending = -1; return; }
+  if (cutting) return;
+  cutting = true;
+  gsap.timeline({ onComplete: () => { cutting = false; if (pending !== -1 && pending !== active) { const n = pending; pending = -1; cutTo(n); } else pending = -1; } })
+    .to([barT, barB], { height: "50.5vh", duration: 0.32, ease: "power3.in" })
+    .add(() => applyLocation(pending))
+    .to([barT, barB], { height: "7vh", duration: 0.7, ease: "expo.out", delay: 0.05 });
+}
+
+// Intro: open from black bars
+if (!capture) gsap.fromTo([barT, barB], { height: "50.5vh" }, { height: "7vh", duration: 1.6, ease: "expo.inOut", delay: 0.6 });
+
+const tc = document.getElementById("tc");
+let frame = 0;
+v.onFrame((t) => {
+  updatePointer();
+  const p = dbg.has("loc") ? +dbg.get("loc") + 0.01 : scrollProgress(0.07) * LOCS.length;
+  const i = Math.min(LOCS.length - 1, Math.floor(p));
+  cutTo(i);
+  const l = LOCS[active], f = smooth(Math.min(1, Math.max(0, p - active)));
+  const [a, b] = l.cam;
+  const theta = lerp(a[0], b[0], f) + pointer.sx * 0.2, r = lerp(a[1], b[1], f) * (mobile() ? 1.45 : 1);
+  v.camera.position.set(Math.sin(theta) * r, lerp(a[2], b[2], f) - pointer.sy * 0.3, Math.cos(theta) * r);
+  v.camera.lookAt(0, 0.6, 0);
+  // timecode for the film feel
+  frame++; const s = Math.floor(t);
+  tc.textContent = `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor(s / 60) % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}:${String(frame % 24).padStart(2, "0")}`;
+});
+v.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Model inspector</title>
+<pre id="out">loading…</pre>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+// Dev tool: reports size, variants, meshes and animations for every model in assets/models.
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+const names = ["ChronographWatch", "MaterialsVariantsShoe", "CarConcept", "SheenChair", "GlamVelvetSofa"];
+const loader = new GLTFLoader();
+const report = {};
+for (const n of names) {
+  const g = await loader.loadAsync(`../assets/models/${n}.glb`);
+  const box = new THREE.Box3().setFromObject(g.scene);
+  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+  const meshes = [], mats = new Set();
+  g.scene.traverse((o) => { if (o.isMesh) { meshes.push(o.name); mats.add(o.material.name); } });
+  const ext = g.userData.gltfExtensions || {};
+  report[n] = {
+    size: size.toArray().map((v) => +v.toFixed(3)), center: center.toArray().map((v) => +v.toFixed(3)),
+    variants: ext.KHR_materials_variants ? ext.KHR_materials_variants.variants.map((v) => v.name) : null,
+    animations: g.animations.map((a) => `${a.name} (${a.duration.toFixed(1)}s)`),
+    cameras: g.cameras.length, meshCount: meshes.length,
+    meshes: meshes.slice(0, 40), materials: [...mats].slice(0, 40),
+    extensionsUsed: g.parser.json.extensionsUsed,
+  };
+}
+window.report = report;
+document.getElementById("out").textContent = JSON.stringify(report, null, 1);
+</script>

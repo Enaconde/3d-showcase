@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AERO 07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;900&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+  :root { --paper: #f1eee8; --ink: #121212; --accent: #2f6df6; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--paper); color: var(--ink); font-family: Archivo, system-ui, sans-serif; overflow-x: hidden; }
+  canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 22px 32px; mix-blend-mode: difference; color: #fff; }
+  .logo { font: 900 22px Archivo, sans-serif; letter-spacing: -.04em; }
+  nav .links { display: flex; gap: 26px; font-size: 13px; font-weight: 600; }
+  .back { position: fixed; top: 64px; left: 32px; z-index: 10; font-size: 12px; font-weight: 600; color: #fff; mix-blend-mode: difference; text-decoration: none; opacity: .8; }
+  /* 1 · hero with kinetic type */
+  .hero { position: relative; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 1vh; }
+  .row { white-space: nowrap; font: 900 15vw/0.86 Archivo, sans-serif; letter-spacing: -.055em; will-change: transform; }
+  .row.o { color: transparent; -webkit-text-stroke: 2px var(--ink); }
+  .row em { font: italic 400 15vw/0.86 "Instrument Serif", serif; letter-spacing: -.02em; }
+  .hero .foot { position: absolute; left: 32px; right: 32px; bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 4; }
+  .hero .foot p { max-width: 300px; font-size: 14px; line-height: 1.5; }
+  .scroll { font-size: 12px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; }
+  /* 2 · horizontal lookbook */
+  .look { position: relative; height: 100vh; overflow: hidden; background: #111; }
+  .track { display: flex; height: 100%; will-change: transform; }
+  .panel { position: relative; flex: 0 0 100vw; height: 100%; overflow: hidden; color: #fff; }
+  .panel img { position: absolute; inset: -4% -8%; width: 116%; height: 108%; object-fit: cover; will-change: transform; }
+  .panel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.05) 60%), linear-gradient(0deg, rgba(0,0,0,.45), transparent 40%); }
+  .panel .txt { position: absolute; left: 6vw; bottom: 9vh; z-index: 2; max-width: 520px; }
+  .num { font-size: 12px; font-weight: 600; letter-spacing: .2em; }
+  .panel h2 { font: italic 400 clamp(80px, 12vw, 200px)/.85 "Instrument Serif", serif; letter-spacing: -.02em; margin: 10px 0 16px; }
+  .panel p { font-size: 15px; line-height: 1.55; opacity: .9; max-width: 360px; }
+  .panel .shop { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 14px 24px; border-radius: 999px; background: #fff; color: #111; font-weight: 600; font-size: 14px; text-decoration: none; }
+  .panel .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .lookbar { position: absolute; left: 6vw; right: 6vw; top: 12vh; z-index: 5; display: flex; justify-content: space-between; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+  .lookbar .line { flex: 1; height: 1px; margin: 7px 20px 0; background: rgba(255,255,255,.3); }
+  .lookbar .line i { display: block; height: 100%; width: 0; background: #fff; }
+  /* 3 · tech */
+  .tech { position: relative; min-height: 120vh; padding: 18vh 32px 10vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+  .tech .right { grid-column: 2; }
+  .tech h3 { font: 900 clamp(48px, 6.5vw, 108px)/.86 Archivo, sans-serif; letter-spacing: -.055em; }
+  .tech h3 em { font: italic 400 1.05em/0.8 "Instrument Serif", serif; letter-spacing: -.02em; color: var(--accent); }
+  .feats { margin-top: 40px; }
+  .feats div { display: grid; grid-template-columns: 120px 1fr; gap: 20px; padding: 20px 0; border-top: 1.5px solid var(--ink); }
+  .feats b { font: 900 38px/1 Archivo, sans-serif; letter-spacing: -.04em; }
+  .feats span { font-size: 14px; line-height: 1.5; opacity: .75; }
+  .end { position: relative; height: 70vh; display: grid; place-items: center; text-align: center; background: var(--ink); color: var(--paper); }
+  .end h3 { font: italic 400 clamp(60px, 9vw, 150px)/.9 "Instrument Serif", serif; margin-bottom: 30px; }
+  .btn { display: inline-block; padding: 20px 40px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 900; text-decoration: none; letter-spacing: .02em; }
+  .loader { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: var(--paper); font: 900 14vw/1 Archivo, sans-serif; letter-spacing: -.05em; transition: opacity .8s; }
+  .loader.done { opacity: 0; pointer-events: none; }
+  .credit { position: fixed; right: 32px; bottom: 8px; z-index: 10; font-size: 9px; color: #fff; mix-blend-mode: difference; opacity: .6; }
+  @media (max-width: 760px) {
+    nav .links { display: none; } nav { padding: 18px 16px; } .back { left: 16px; top: 54px; }
+    .row { font-size: 22vw; } .row em { font-size: 22vw; } .hero .foot { left: 16px; right: 16px; } .hero .foot p { display: none; }
+    .panel .txt { left: 20px; right: 20px; bottom: 8vh; } .panel h2 { font-size: 84px; } .lookbar { left: 20px; right: 20px; top: 10vh; }
+    .tech { grid-template-columns: 1fr; padding: 60vh 16px 10vh; } .tech .right { grid-column: 1; } .feats div { grid-template-columns: 90px 1fr; } .feats b { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><span data-pct>0%</span></div>
+<canvas id="gl"></canvas>
+<nav><div class="logo">STRIDE®</div><div class="links"><span>Drops</span><span>Lookbook</span><span>Journal</span></div><div>Bag (0)</div></nav>
+<a class="back" href="../../#aero">← Back to showcase</a>
+
+<section class="hero">
+  <div class="row" data-speed="-1">AERO 07 ✦ <em>run the city</em> ✦ AERO 07 ✦ <em>run the city</em> ✦&nbsp;</div>
+  <div class="row o" data-speed="1.3">MIDNIGHT ✦ BEACH ✦ STREET ✦ MIDNIGHT ✦ BEACH ✦ STREET ✦&nbsp;</div>
+  <div class="row" data-speed="-0.8"><em>featherweight</em> ✦ 212 G ✦ <em>featherweight</em> ✦ 212 G ✦&nbsp;</div>
+  <div class="foot">
+    <p data-reveal data-now data-delay="1.2">Drop 07 — three colorways, 500 pairs each. A featherweight runner with a sculpted foam midsole.</p>
+    <div class="scroll" data-reveal data-now data-delay="1.4">Scroll to see the lookbook ↓</div>
+  </div>
+</section>
+
+<section class="look" id="look">
+  <div class="lookbar"><span>Lookbook</span><span class="line"><i id="lookline"></i></span><span id="lookn">01 / 03</span></div>
+  <div class="track" id="track">
+    <article class="panel"><img src="../../assets/photos/midnight.jpg" alt="City street at blue hour">
+      <div class="txt"><div class="num">01 — COLORWAY</div><h2 data-split="chars">Midnight</h2><p>Deep ocean knit for after-dark runs between the glass and the brick.</p><a class="shop" href="#"><span class="swatch" style="background:#1f7fb8"></span>Shop Midnight — $220</a></div></article>
+    <article class="panel"><img src="../../assets/photos/beach.jpg" alt="Beach huts on a grey morning">
+      <div class="txt"><div class="num">02 — COLORWAY</div><h2 data-split="chars">Beach</h2><p>Sand-washed tones made for early tides, salt air and the long way home.</p><a class="shop" href="#"><span class="swatch" style="background:#e9c9a3"></span>Shop Beach — $220</a></div></article>
+    <article class="panel"><img src="../../assets/photos/street.jpg" alt="Graffiti on a shop shutter">
+      <div class="txt"><div class="num">03 — COLORWAY</div><h2 data-split="chars">Street</h2><p>Concrete grey with a loud red heel tab. Built to be scuffed.</p><a class="shop" href="#"><span class="swatch" style="background:#b9bcb6"></span>Shop Street — $220</a></div></article>
+  </div>
+</section>
+
+<section class="tech" id="tech">
+  <div class="right">
+    <h3 data-split="words">Light on foot. <em>Loud</em> on the street.</h3>
+    <div class="feats">
+      <div data-reveal><b>212g</b><span>Featherweight knit upper with a reinforced toe cap.</span></div>
+      <div data-reveal><b>38mm</b><span>Stack height of responsive foam that springs back every stride.</span></div>
+      <div data-reveal><b>+40%</b><span>More grip from a multi-directional rubber outsole.</span></div>
+    </div>
+  </div>
+</section>
+<section class="end"><div><h3 data-split="words">See you out there.</h3><a class="btn" href="#" data-magnetic>Join the drop list</a></div></section>
+<div class="credit">3D model: “Materials Variants Shoe” © 2021 Shopify, CC BY 4.0 · Photos: Poly Haven, CC0</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+import { createViewer, THREE, capture, mobile, pointer, updatePointer, progressUI, lerp, segment, smooth } from "../shared/viewer.js";
+import { initMotion } from "../shared/motion.js";
+
+const WAYS = [{ id: "midnight", accent: "#2f6df6" }, { id: "beach", accent: "#e0662c" }, { id: "street", accent: "#d93a2b" }];
+const { gsap, ScrollTrigger, lenis } = initMotion({ curtainColor: "#121212" });
+
+// Kinetic type: rows drift on their own and speed up with scroll velocity
+const rows = [...document.querySelectorAll(".row")];
+rows.forEach((r) => (r.innerHTML += r.innerHTML)); // doubled for a seamless loop
+const rowX = rows.map(() => 0);
+let velocity = 0;
+gsap.ticker.add((_, dt) => {
+  const v = lenis ? lenis.velocity : 0;
+  velocity += (v - velocity) * 0.1;
+  rows.forEach((r, i) => {
+    const half = r.scrollWidth / 2, speed = +r.dataset.speed;
+    rowX[i] -= speed * (0.05 + Math.abs(velocity) * 0.04) * dt;
+    rowX[i] = ((rowX[i] % half) - half) % half;
+    r.style.transform = `translate3d(${rowX[i]}px,0,0)`;
+  });
+});
+
+// Horizontal lookbook: pinned section, track slides left as you scroll
+const track = document.getElementById("track"), look = document.getElementById("look"), panels = [...track.children];
+const lookST = ScrollTrigger.create({
+  trigger: look, pin: true, start: "top top", end: () => "+=" + (track.scrollWidth - innerWidth) * 1.2, scrub: true, invalidateOnRefresh: true,
+  animation: gsap.to(track, { x: () => -(track.scrollWidth - innerWidth), ease: "none" }),
+});
+// photos drift inside their panels for depth
+panels.forEach((p) => gsap.fromTo(p.querySelector("img"), { xPercent: -4 }, { xPercent: 4, ease: "none",
+  scrollTrigger: { trigger: p, containerAnimation: lookST.animation, start: "left right", end: "right left", scrub: true } }));
+// panel headlines animate when the panel arrives
+panels.forEach((p) => ScrollTrigger.create({ trigger: p, containerAnimation: lookST.animation, start: "left 60%",
+  onEnter: () => gsap.fromTo(p.querySelectorAll(".txt > *"), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: 0.08, ease: "expo.out" }) }));
+
+// 3D shoe
+const v = createViewer({ canvas: document.getElementById("gl"), fov: 28, exposure: 1.05, shadows: false });
+v.camera.position.set(0, 0.2, 6.5);
+await v.loadEnvironment("../../assets/hdri/studio_small_09.hdr", { intensity: 1.15, rotationY: 1.2 });
+const loaded = progressUI(document.getElementById("loader"));
+const shoe = await v.loadModel("../../assets/models/MaterialsVariantsShoe.glb", { size: 2.3, center: "center", onProgress: (p) => loaded(p * 0.95) });
+const blob = v.addBlobShadow({ width: 2.4, depth: 0.9, opacity: 0.35, y: -0.95 });
+await shoe.setVariant("midnight");
+loaded(1);
+const spin = new THREE.Group(); v.scene.remove(shoe.holder); spin.add(shoe.holder); v.scene.add(spin);
+if (!capture) {
+  gsap.from(spin.position, { y: 3, duration: 1.6, ease: "expo.out", delay: 0.3 });
+  gsap.from(spin.rotation, { y: -Math.PI * 2, z: 0.6, duration: 2, ease: "expo.out", delay: 0.3 });
+}
+
+let way = 0;
+function setWay(i) {
+  if (i === way) return;
+  way = i;
+  document.documentElement.style.setProperty("--accent", WAYS[i].accent);
+  if (capture) return shoe.setVariant(WAYS[i].id);
+  gsap.to(spin.rotation, { y: spin.rotation.y + Math.PI * 2, duration: 1.0, ease: "power3.inOut" });
+  setTimeout(() => shoe.setVariant(WAYS[i].id), 380);
+}
+
+const techEl = document.getElementById("tech"), lookline = document.getElementById("lookline"), lookn = document.getElementById("lookn");
+let lean = 0;
+v.onFrame((t) => {
+  updatePointer();
+  const m = mobile();
+  const heroOut = segment(scrollY / innerHeight, 0, 1);                 // 0 hero → 1 lookbook pinned
+  const lp = lookST.progress;
+  const idx = Math.min(WAYS.length - 1, Math.round(lp * (WAYS.length - 1)));
+  if (heroOut > 0.5) setWay(idx);
+  lookline.style.width = lp * 100 + "%"; lookn.textContent = `0${idx + 1} / 03`;
+  const tr = techEl.getBoundingClientRect();
+  const intoTech = segment(1 - tr.top / innerHeight, 0.1, 0.9);         // tech section rising into view
+  lean += ((lenis ? lenis.velocity : 0) * -0.012 - lean) * 0.08;
+
+  // hero: centre, big · lookbook: right side, smaller, leaning with the scroll · tech: left, sole up
+  const px = m ? 0 : lerp(lerp(0, 1.55, heroOut), -1.6, intoTech);
+  const py = (m ? lerp(0, -1.2, heroOut) : lerp(0, -0.35, heroOut)) + Math.sin(t * 1.3) * 0.06;
+  const s = lerp(lerp(1.15, 0.7, heroOut), 1.05, intoTech);
+  shoe.holder.position.set(px, py, 0);
+  shoe.holder.scale.setScalar(s);
+  shoe.holder.rotation.set(
+    lerp(0.15, -1.15, intoTech) + pointer.sy * 0.3,
+    lerp(-0.5 + t * 0.25 * (1 - heroOut), -0.35, heroOut) + pointer.sx * 0.6,
+    0.18 + lean + Math.sin(t * 0.9) * 0.03,
+  );
+  blob.position.set(px, -0.95 * s + py, 0);
+  blob.material.opacity = 0.35 * (1 - heroOut) + 0.3 * intoTech * 0;
+});
+v.start();
+</script>
+</body>
+</html>

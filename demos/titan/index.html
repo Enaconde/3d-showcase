@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITAN G-10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root { --accent: #d4a843; --bg: #0b0c0b; --ink: #ecebe6; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: "JetBrains Mono", monospace; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(50% 55% at 50% 48%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 80px), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 80px); }
+  .scan { position: fixed; left: 0; right: 0; height: 120px; z-index: 0; pointer-events: none; top: -120px;
+    background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 10%, transparent), transparent); animation: scan 6s linear infinite; }
+  @keyframes scan { to { top: 100%; } }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  .giant { position: fixed; inset: 0; z-index: 0; display: grid; place-items: center; pointer-events: none; }
+  .giant span { font: 900 34vw/0.8 "Big Shoulders Display", sans-serif; color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 40%, transparent); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 6; display: flex; justify-content: space-between; align-items: center; padding: 22px 32px; font-size: 12px; letter-spacing: .12em; }
+  .logo { font: 900 26px "Big Shoulders Display", sans-serif; letter-spacing: .08em; }
+  .logo b { color: var(--accent); }
+  nav .links { display: flex; gap: 26px; opacity: .75; }
+  .back { position: fixed; top: 66px; left: 32px; z-index: 6; font-size: 11px; color: inherit; opacity: .5; text-decoration: none; letter-spacing: .1em; }
+  .back:hover { opacity: 1; }
+  .tag { font-size: 11px; letter-spacing: .3em; color: var(--accent); }
+  h1, h2 { font: 900 clamp(60px, 7.5vw, 124px)/.86 "Big Shoulders Display", sans-serif; text-transform: uppercase; margin: 14px 0 18px; }
+  h2 { font-size: clamp(44px, 5.5vw, 92px); }
+  p { font-size: 13px; line-height: 1.75; opacity: .72; max-width: 340px; }
+  section { position: relative; z-index: 4; padding: 0 32px; pointer-events: none; }
+  section * { pointer-events: auto; }
+  .hero { height: 100vh; display: flex; align-items: center; }
+  .side { max-width: 560px; } .side p, .side .specs { max-width: 360px; }
+  .specs { margin-top: 22px; font-size: 12px; }
+  .specs div { display: flex; justify-content: space-between; gap: 30px; padding: 9px 0; border-top: 1px solid rgba(236,235,230,.14); }
+  .specs b { color: var(--accent); font-weight: 600; }
+  .explode { height: 340vh; }
+  .explode .sticky { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 16vh; }
+  .count { position: absolute; right: 0; top: 16vh; text-align: right; font-size: 11px; letter-spacing: .2em; opacity: .7; }
+  .count b { display: block; font: 900 72px/1 "Big Shoulders Display", sans-serif; letter-spacing: 0; color: var(--accent); opacity: 1; }
+  .cta { height: 110vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 16vh; text-align: center; }
+  .cta p { margin: 0 auto 28px; }
+  .btn { display: inline-flex; gap: 14px; align-items: center; padding: 18px 34px; background: var(--accent); color: #0b0c0b; font-weight: 600; letter-spacing: .12em; font-size: 12px; text-decoration: none; }
+  .hud { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+  .pin { position: absolute; left: 0; top: 0; font-size: 10px; letter-spacing: .14em; white-space: nowrap; opacity: 0; }
+  .pin::before { content: ""; position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .pin::after { content: ""; position: absolute; top: 0; width: 70px; height: 1px; background: color-mix(in srgb, var(--accent) 60%, transparent); }
+  .pin.L::after { right: 4px; } .pin.R::after { left: 4px; }
+  .pin span { position: absolute; top: -12px; padding: 4px 9px; border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); background: rgba(11,12,11,.8); }
+  .pin.L span { right: 78px; text-align: right; } .pin.R span { left: 78px; }
+  .pin small { display: block; opacity: .55; font-size: 9px; margin-top: 2px; }
+  .finishes { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 6; display: flex; gap: 8px; padding: 8px; border-radius: 999px; background: rgba(20,21,20,.7); backdrop-filter: blur(10px); border: 1px solid rgba(236,235,230,.1); }
+  .finishes button { all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px; font-size: 11px; letter-spacing: .08em; opacity: .6; }
+  .finishes button i { width: 12px; height: 12px; border-radius: 50%; }
+  .finishes button.on { opacity: 1; background: rgba(236,235,230,.1); }
+  .progress { position: fixed; left: 32px; bottom: 32px; z-index: 6; width: 160px; height: 2px; background: rgba(236,235,230,.15); }
+  .progress i { display: block; height: 100%; width: 0; background: var(--accent); }
+  .loader { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--bg); font: 900 12vw/1 "Big Shoulders Display", sans-serif; transition: opacity .8s; }
+  .loader.done { opacity: 0; pointer-events: none; }
+  .credit { position: fixed; right: 32px; bottom: 10px; z-index: 6; font-size: 9px; opacity: .35; }
+  @media (max-width: 760px) {
+    nav .links, .progress, .credit { display: none; }
+    section { padding: 0 16px; } .hero { align-items: flex-end; padding-bottom: 110px; } .specs { display: none; }
+    .explode .sticky { padding-top: 12vh; } .count b { font-size: 48px; }
+    .pin span { font-size: 8px; } .pin::after { width: 30px; } .pin.L span { right: 36px; } .pin.R span { left: 36px; }
+    .finishes { width: calc(100% - 24px); justify-content: space-between; } .finishes button { padding: 8px; font-size: 0; } .finishes button i { width: 18px; height: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><span data-pct>0%</span></div>
+<div class="scan"></div>
+<div class="giant"><span>G-10</span></div>
+<canvas id="gl"></canvas>
+<div class="hud" id="hud"></div>
+<nav><div class="logo">TITAN<b>.</b></div><div class="links"><span>COLLECTION</span><span>EXPEDITIONS</span><span>SERVICE</span></div><div>[ CART 0 ]</div></nav>
+<a class="back" href="../../#titan">← BACK TO SHOWCASE</a>
+
+<section class="hero">
+  <div class="side">
+    <div class="tag" data-reveal data-now data-delay="0.9">// SERIES G-10 · 2026</div>
+    <h1 data-split="chars" data-now data-delay="1">Built for<br>extremes</h1>
+    <p data-reveal data-now data-delay="1.3">A shock-resistant chronograph forged for divers, pilots and anyone who goes further. Scroll to take it apart.</p>
+    <div class="specs" data-reveal data-now data-delay="1.4"><div><span>Water resistance</span><b>200 M</b></div><div><span>Case</span><b>Grade 5 titanium</b></div><div><span>Power reserve</span><b>Solar · 10 mo</b></div></div>
+  </div>
+</section>
+<section class="explode">
+  <div class="sticky">
+    <div class="tag" data-reveal>02 · EXPLODED VIEW</div>
+    <h2 data-split="words">Every layer,<br>engineered.</h2>
+    <div class="count"><b id="layers">00</b>LAYERS EXPOSED</div>
+  </div>
+</section>
+<section class="cta">
+  <div>
+    <div class="tag" data-reveal>03 · RESERVE</div>
+    <h2 data-split="chars">Yours to<br>break in.</h2>
+    <p data-reveal>Limited first run of 1,000 pieces, each numbered on the caseback.</p>
+    <a class="btn" href="#" data-magnetic data-reveal>RESERVE THE G-10 →</a>
+  </div>
+</section>
+<div class="finishes" id="finishes"></div>
+<div class="progress"><i id="bar"></i></div>
+<div class="credit">3D model: “Chronograph Watch” by Eric Chadwick © 2025 Darmstadt Graphics Group, CC BY 4.0</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+import { createViewer, THREE, capture, mobile, pointer, updatePointer, progressUI, lerp, segment } from "../shared/viewer.js";
+import { initMotion } from "../shared/motion.js";
+
+const FINISHES = [
+  { variant: "Midnight Gold", name: "Midnight Gold", accent: "#d4a843" },
+  { variant: "Surgical White", name: "Arctic", accent: "#dfe6ec" },
+  { variant: "Commerce Green", name: "Field Green", accent: "#3ecf8e" },
+  { variant: "Khronos Red", name: "Rescue Red", accent: "#ff4a3d" },
+];
+// How far each part travels along the watch's face axis when exploded (in watch widths), plus label.
+const LAYERS = [
+  { match: /^Glass_Face$/, z: 1.3, label: "Sapphire crystal", sub: "3 mm · anti-reflective", side: "R" },
+  { match: /^Hand_Seconds/, z: 1.08 },
+  { match: /^Hand_Minutes/, z: 0.98, label: "Luminous hands", sub: "Super-LumiNova", side: "L" },
+  { match: /^Hand_(Hours|Setting)/, z: 0.88 },
+  { match: /^Watch_Face$/, z: 0.55, label: "Carbon dial", sub: "World-time ring", side: "R" },
+  { match: /^Bezel_Frame$/, z: 0.2, label: "Titanium bezel", sub: "Grade 5 · 12 screws", side: "L" },
+  { match: /^Button_/, z: 0.2, x: 0.45, label: "Guarded pushers", sub: "Screw-down", side: "R" },
+  { match: /^(Band_|Clasp)/, z: -0.75, label: "Woven carbon strap", sub: "Forged weave", side: "L" },
+  { match: /^Backplate/, z: -1.35 },
+];
+
+const { gsap } = initMotion({ curtainColor: "#0b0c0b" });
+const v = createViewer({ canvas: document.getElementById("gl"), fov: 24, exposure: 1.0, toneMapping: THREE.ACESFilmicToneMapping, shadows: false });
+v.camera.position.set(0, 0, 9);
+await v.loadEnvironment("../../assets/hdri/studio_small_09.hdr", { intensity: 1.15, rotationY: 0.6 });
+const rim = new THREE.DirectionalLight(0xffffff, 2.2); rim.position.set(-3, 2, -4); v.scene.add(rim);
+
+const loaded = progressUI(document.getElementById("loader"));
+const watch = await v.loadModel("../../assets/models/ChronographWatch.glb", { size: 2.6, center: "center", onProgress: (p) => loaded(p * 0.95) });
+await watch.setVariant(FINISHES[0].variant);
+loaded(1);
+
+// Work out each part's explode offset in its parent's local space (holder is at identity here).
+const UNIT = 2.6, parts = [], hud = document.getElementById("hud"), center = new THREE.Vector3();
+watch.holder.updateMatrixWorld(true);
+watch.root.traverse((o) => {
+  if (!o.isMesh) return;
+  const layer = LAYERS.find((l) => l.match.test(o.name));
+  if (!layer) return;
+  const box = new THREE.Box3().setFromObject(o), c = box.getCenter(new THREE.Vector3());
+  const world = new THREE.Vector3(layer.x ? Math.sign(c.x || 1) * layer.x * UNIT : 0, 0, layer.z * UNIT * 0.62);
+  const toParent = new THREE.Matrix3().setFromMatrix4(o.parent.matrixWorld.clone().invert());
+  parts.push({ mesh: o, layer, base: o.position.clone(), offset: world.applyMatrix3(toParent), anchor: c.clone() });
+});
+// One HUD pin per labelled layer, anchored to the first part of that layer
+const pins = LAYERS.filter((l) => l.label).map((l) => {
+  const part = parts.find((p) => p.layer === l);
+  const el = Object.assign(document.createElement("div"), { className: "pin " + l.side, innerHTML: `<span>${l.label.toUpperCase()}<small>${l.sub}</small></span>` });
+  hud.appendChild(el);
+  return { el, part, local: part ? watch.holder.worldToLocal(part.anchor.clone()) : null };
+}).filter((p) => p.part);
+
+// Finish switcher: studio lights sweep across the metal while the materials swap
+const box = document.getElementById("finishes");
+FINISHES.forEach((f, i) => {
+  const b = document.createElement("button");
+  b.innerHTML = `<i style="background:${f.accent}"></i>${f.name.toUpperCase()}`;
+  b.onclick = () => {
+    [...box.children].forEach((x, k) => x.classList.toggle("on", k === i));
+    document.documentElement.style.setProperty("--accent", f.accent);
+    if (capture) return watch.setVariant(f.variant);
+    gsap.to(v.scene.environmentRotation, { y: "+=" + Math.PI * 2, duration: 1.6, ease: "power2.inOut" });
+    setTimeout(() => watch.setVariant(f.variant), 350);
+  };
+  box.appendChild(b);
+});
+box.children[0].classList.add("on");
+
+if (!capture) {
+  gsap.from(watch.holder.rotation, { y: -1.6, x: 0.7, duration: 2.2, ease: "expo.out", delay: 0.4 });
+  gsap.from(watch.holder.position, { z: -8, duration: 2.2, ease: "expo.out", delay: 0.4 });
+}
+
+const explodeEl = document.querySelector(".explode"), layersEl = document.getElementById("layers"), bar = document.getElementById("bar");
+const tmp = new THREE.Vector3();
+let ex = 0;
+v.onFrame((t) => {
+  updatePointer();
+  const m = mobile();
+  // progress through the exploded-view section (0 → 1) and through the whole page
+  const r = explodeEl.getBoundingClientRect();
+  const sp = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+  const page = scrollY / (document.documentElement.scrollHeight - innerHeight);
+  bar.style.width = page * 100 + "%";
+  const intoSection = segment(-r.top / innerHeight + 1, 0, 1);     // 0 in hero → 1 when the section pins
+  const target = segment(sp, 0.05, 0.55) * (1 - segment(sp, 0.85, 1.0) * 0) * (1 - segment(page, 0.9, 1.0));
+  ex += (target - ex) * 0.08;
+
+  parts.forEach((p) => p.mesh.position.copy(p.base).addScaledVector(p.offset, ex));
+  const turn = segment(sp, 0.0, 0.5);
+  const x = m ? 0 : lerp(1.3, -0.2, intoSection);
+  watch.holder.position.x += (x - watch.holder.position.x) * 0.1;
+  watch.holder.position.y = (m ? 0.6 : -0.15 * intoSection) + Math.sin(t * 1.1) * 0.04;
+  if (!gsap.isTweening(watch.holder.rotation)) {
+    watch.holder.rotation.y = lerp(-0.35, 0.62 + sp * 0.3, turn) + pointer.sx * 0.4;
+    watch.holder.rotation.x = lerp(0.08, 0.42, turn) + pointer.sy * 0.25;
+    watch.holder.rotation.z = lerp(0.12, -0.05, turn);
+  }
+  v.camera.position.z = (m ? 13 : 9) + ex * (m ? 6 : 4.2);
+  v.camera.lookAt(0, 0, 0);
+
+  // pins follow their parts; they fade in one by one as the watch opens up
+  pins.forEach((pin, i) => {
+    tmp.copy(pin.part.mesh.getWorldPosition(new THREE.Vector3()));
+    const bb = new THREE.Box3().setFromObject(pin.part.mesh); bb.getCenter(tmp);
+    tmp.project(v.camera);
+    pin.el.style.transform = `translate(${(tmp.x * 0.5 + 0.5) * innerWidth}px, ${(-tmp.y * 0.5 + 0.5) * innerHeight}px)`;
+    pin.el.style.opacity = Math.min(1, Math.max(0, (ex - 0.35 - i * 0.08) * 4));
+  });
+  layersEl.textContent = String(Math.round(ex * parts.length)).padStart(2, "0");
+});
+v.start();
+</script>
+</body>
+</html>

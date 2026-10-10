@@ -4,7 +4,7 @@ $root = $PSScriptRoot
 $types = @{
   ".html" = "text/html; charset=utf-8"; ".js" = "text/javascript"; ".css" = "text/css"
   ".json" = "application/json"; ".png" = "image/png"; ".jpg" = "image/jpeg"; ".webp" = "image/webp"
-  ".svg" = "image/svg+xml"; ".glb" = "model/gltf-binary"; ".mp4" = "video/mp4"; ".woff2" = "font/woff2"
+  ".svg" = "image/svg+xml"; ".hdr" = "application/octet-stream"; ".glb" = "model/gltf-binary"; ".mp4" = "video/mp4"; ".woff2" = "font/woff2"
 }
 $listener = [System.Net.HttpListener]::new()
 $listener.Prefixes.Add("http://localhost:$Port/")

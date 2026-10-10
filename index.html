@@ -53,6 +53,7 @@
 </style>
 </head>
 <body>
+<canvas id="silk" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.9"></canvas>
 <div class="bg-word" id="bgWord">WORK</div>
 <canvas id="gl"></canvas>
 
@@ -72,9 +73,11 @@
 <div class="fade" id="fade"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from "three";
+import { silk } from "./demos/shared/backgrounds.js";
+silk(document.getElementById("silk"), { color: "#3d3a4c", speed: 3, scale: 0.9, noise: 1.4, rotation: -0.3 });
 
 // ───── Edit these to make it yours ─────
 const STUDIO = {
@@ -83,10 +86,11 @@ const STUDIO = {
   email: "hello@yourstudio.com",
 };
 const PROJECTS = [
-  { slug: "volt", name: "VOLT Energy", cat: "Product launch", tags: ["Three.js", "3D product", "GSAP"], color: "#ff7a1a" },
-  { slug: "neura", name: "NEURA", cat: "AI / Tech", tags: ["Particles", "GLSL shaders", "Scroll morph"], color: "#7cf3ff" },
-  { slug: "eclat", name: "Maison Éclat", cat: "Fashion", tags: ["Shader art", "Typography", "Motion"], color: "#e6b98a" },
-  { slug: "altitude", name: "Altitude", cat: "Real estate", tags: ["3D architecture", "Camera paths", "Sunset sky"], color: "#ffcf99" },
+  { slug: "volt", name: "VOLT Energy", cat: "Product launch", tags: ["3D product", "Flavor switcher", "GSAP"], color: "#ff7a1a" },
+  { slug: "titan", name: "TITAN G-10", cat: "Watches", tags: ["Exploded view", "Scroll story", "HUD labels"], color: "#d4a843" },
+  { slug: "vanta", name: "VANTA GT", cat: "Automotive", tags: ["Real locations", "Film cuts", "Paint switcher"], color: "#e8433b" },
+  { slug: "aero", name: "AERO 07", cat: "Fashion / Sneakers", tags: ["Kinetic type", "Horizontal lookbook", "Editorial"], color: "#2f6df6" },
+  { slug: "forma", name: "FORMA Living", cat: "Interiors", tags: ["Photo room", "Fabric wipe", "Silk intro"], color: "#c9a27a" },
 ];
 // ────────────────────────────────────────
 
